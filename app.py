@@ -6,7 +6,6 @@ from openai import OpenAI
 app = Flask(__name__)
 CORS(app)
 
-# 👉 OpenAI client
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 SYSTEM_PROMPT = """
@@ -40,7 +39,12 @@ def chat():
         reply = response.choices[0].message.content
         return jsonify({"reply": reply})
     except Exception as e:
-        return jsonify({"reply": "😅 Thoda issue aaya, dobara try karo."}), 500
+        return jsonify({"reply": "😅 Server thoda busy hai, dobara try karo."})
+
+@app.route("/")
+def home():
+    return "AI YAAR Backend is LIVE 🚀"
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
