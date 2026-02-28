@@ -1,50 +1,41 @@
-import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from openai import OpenAI
 
 app = Flask(__name__)
 CORS(app)
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+# 🧠 FREE DEMO KNOWLEDGE BASE
+def ai_yaar_reply(message, language):
+    msg = message.lower()
 
-SYSTEM_PROMPT = """
-You are AI YAAR, a friendly AI buddy, not a strict teacher.
-Teach Artificial Intelligence from beginner to professional level.
-Speak in Hindi, Marathi, or English as selected by the user.
-Use simple language, daily-life examples, friendly tone, light humor.
-Avoid technical jargon unless asked.
-If user is confused, simplify further without judgement.
-Support voice and text conversation.
-Goal: remove fear of AI and build confidence.
-"""
+    if "ai kya" in msg or "what is ai" in msg:
+        if language == "Marathi":
+            return "😄 सोप्या शब्दात सांगायचं तर, AI म्हणजे मशीनला माणसासारखं स्मार्ट बनवणं. उदा: मोबाईलचा फेस लॉक."
+        elif language == "English":
+            return "😄 Simply put, AI means making machines smart like humans, such as phone face unlock."
+        else:
+            return "😄 Simple bolu? AI matlab machine ko insaan jaisa smart banana, jaise mobile ka face lock."
+
+    if "use" in msg or "kaise" in msg:
+        return "AI ka use learning, business, content writing aur automation mein hota hai 👍"
+
+    if "career" in msg or "future" in msg:
+        return "AI future ka skill hai 🚀 AI Engineer, Prompt Expert, AI Business jaise roles hote hain."
+
+    return "😊 Main AI Yaar hoon. AI seekhne ke liye kuch bhi poochho, main simple language mein samjhaunga."
 
 @app.route("/chat", methods=["POST"])
 def chat():
     data = request.json
-    user_message = data.get("message", "")
+    message = data.get("message", "")
     language = data.get("language", "Hindi")
 
-    messages = [
-        {"role": "system", "content": SYSTEM_PROMPT + f"\nLanguage: {language}"},
-        {"role": "user", "content": user_message}
-    ]
-
-    try:
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=messages,
-            temperature=0.6
-        )
-        reply = response.choices[0].message.content
-        return jsonify({"reply": reply})
-    except Exception as e:
-        return jsonify({"reply": "😅 Server thoda busy hai, dobara try karo."})
+    reply = ai_yaar_reply(message, language)
+    return jsonify({"reply": reply})
 
 @app.route("/")
 def home():
-    return "AI YAAR Backend is LIVE 🚀"
+    return "AI YAAR FREE DEMO Backend is LIVE 🚀"
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 10000))
-    app.run(host="0.0.0.0", port=port)
+    app.run()
