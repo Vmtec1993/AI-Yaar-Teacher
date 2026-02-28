@@ -112,7 +112,7 @@ body {
 
   <div class="messages" id="messages">
     <div class="msg bot">
-      👋 Hi! Main <b>AI Yaar</b> hoon 😄<br>
+      👋 Hi! Main <b>AI Yaar</b> hoon 😄  
       AI seekhne ke liye kuch bhi poochho.
     </div>
   </div>
@@ -128,7 +128,6 @@ body {
 const messages = document.getElementById("messages");
 let currentLanguage = "Hindi";
 
-// Add message to chat
 function addMessage(text, sender) {
   const div = document.createElement("div");
   div.className = "msg " + sender;
@@ -137,13 +136,11 @@ function addMessage(text, sender) {
   messages.scrollTop = messages.scrollHeight;
 }
 
-// Change language
 function changeLanguage() {
   currentLanguage = document.getElementById("languageSelect").value;
   addMessage("🌐 Language changed to " + currentLanguage, "bot");
 }
 
-// Send message to backend
 async function sendMessage() {
   const input = document.getElementById("userInput");
   if (!input.value) return;
@@ -155,21 +152,20 @@ async function sendMessage() {
   try {
     const res = await fetch("https://ai-yaar-teacher.onrender.com/chat", {
       method: "POST",
-      headers: {"Content-Type": "application/json"},
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-  {
-    "message": "AI kya hota hai?",
-    "language": "Hindi"
-  }
-})
+        message: userText,
+        language: currentLanguage
+      })
     });
 
     const data = await res.json();
     addMessage(data.reply, "bot");
     speak(data.reply);
 
-  } catch (err) {
-    addMessage("😅 Server connect nahi ho pa raha.", "bot");
+  } catch (error) {
+    addMessage("😅 Server se connect nahi ho pa raha.", "bot");
+    console.error(error);
   }
 }
 
