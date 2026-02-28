@@ -157,11 +157,11 @@ async function sendMessage() {
       method: "POST",
       headers: {"Content-Type": "application/json"},
       body: JSON.stringify({
-        {
-  "message": "AI kya hota hai?",
-  "language": "Hindi"
-}
-      })
+  {
+    "message": "AI kya hota hai?",
+    "language": "Hindi"
+  }
+})
     });
 
     const data = await res.json();
