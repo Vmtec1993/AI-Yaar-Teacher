@@ -19,7 +19,7 @@ body {
 .chat-container {
   width: 100%;
   max-width: 420px;
-  height: 92vh;
+  height: 95vh;
   background: #fff;
   border-radius: 16px;
   display: flex;
@@ -30,36 +30,47 @@ body {
 .header {
   background: #4f46e5;
   color: #fff;
-  padding: 12px;
+  padding: 10px;
   text-align: center;
 }
 
-.header h2 {
-  margin: 0;
-  font-size: 20px;
-}
-
 .header select {
-  margin-top: 6px;
+  margin-top: 5px;
   padding: 5px;
   border-radius: 6px;
   border: none;
 }
 
+.lesson-buttons {
+  padding: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.lesson-buttons button {
+  background:#4f46e5;
+  color:white;
+  border:none;
+  border-radius:8px;
+  padding:6px 10px;
+  font-size:12px;
+  cursor:pointer;
+}
+
 .messages {
   flex: 1;
-  padding: 12px;
+  padding: 10px;
   overflow-y: auto;
   background: #f9fafb;
 }
 
 .msg {
-  margin: 8px 0;
-  padding: 10px 12px;
-  border-radius: 12px;
+  margin: 6px 0;
+  padding: 8px 10px;
+  border-radius: 10px;
   max-width: 80%;
   font-size: 14px;
-  line-height: 1.4;
 }
 
 .user {
@@ -74,26 +85,24 @@ body {
 
 .input-area {
   display: flex;
-  padding: 10px;
+  padding: 8px;
   border-top: 1px solid #ddd;
   gap: 6px;
 }
 
 .input-area input {
   flex: 1;
-  padding: 10px;
+  padding: 8px;
   border-radius: 8px;
   border: 1px solid #ccc;
 }
 
 .input-area button {
-  border: none;
-  background: #4f46e5;
-  color: white;
-  padding: 10px 12px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 16px;
+  background:#4f46e5;
+  color:white;
+  border:none;
+  border-radius:8px;
+  padding:8px 10px;
 }
 </style>
 </head>
@@ -102,7 +111,7 @@ body {
 
 <div class="chat-container">
   <div class="header">
-    <h2>🤖 AI YAAR</h2>
+    <h3>🤖 AI YAAR</h3>
     <select id="languageSelect" onchange="changeLanguage()">
       <option value="Hindi">Hindi</option>
       <option value="Marathi">Marathi</option>
@@ -110,11 +119,16 @@ body {
     </select>
   </div>
 
+  <div class="lesson-buttons">
+    <button onclick="sendLesson('lesson1')">📘 AI kya hai?</button>
+    <button onclick="sendLesson('lesson2')">📱 AI Daily Life</button>
+    <button onclick="sendLesson('lesson3')">🤖 ChatGPT Use</button>
+    <button onclick="sendLesson('lesson4')">💰 AI Earning</button>
+    <button onclick="sendLesson('lesson5')">🚀 AI Career</button>
+  </div>
+
   <div class="messages" id="messages">
-    <div class="msg bot">
-      👋 Hi! Main <b>AI Yaar</b> hoon 😄  
-      AI seekhne ke liye kuch bhi poochho.
-    </div>
+    <div class="msg bot">👋 Hi! Main AI Yaar hoon 😄</div>
   </div>
 
   <div class="input-area">
@@ -141,63 +155,53 @@ function changeLanguage() {
   addMessage("🌐 Language changed to " + currentLanguage, "bot");
 }
 
-async function sendMessage() {
-  const input = document.getElementById("userInput");
-  if (!input.value) return;
-
-  const userText = input.value;
-  addMessage(userText, "user");
-  input.value = "";
-
-  try {
-    const res = await fetch("https://ai-yaar-teacher.onrender.com/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        message: userText,
-        language: currentLanguage
-      })
-    });
-
-    const data = await res.json();
+function sendLesson(lesson) {
+  fetch("https://ai-yaar-teacher.onrender.com/chat", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({ message: lesson, language: currentLanguage })
+  })
+  .then(res => res.json())
+  .then(data => {
     addMessage(data.reply, "bot");
     speak(data.reply);
-
-  } catch (error) {
-    addMessage("😅 Server se connect nahi ho pa raha.", "bot");
-    console.error(error);
-  }
+  });
 }
 
-// 🎤 Voice Input
+function sendMessage() {
+  const input = document.getElementById("userInput");
+  if(!input.value) return;
+  addMessage(input.value, "user");
+
+  fetch("https://ai-yaar-teacher.onrender.com/chat", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({ message: input.value, language: currentLanguage })
+  })
+  .then(res => res.json())
+  .then(data => {
+    addMessage(data.reply, "bot");
+    speak(data.reply);
+  });
+
+  input.value="";
+}
+
 function startVoice() {
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SpeechRecognition) {
-    alert("Voice input supported nahi hai");
-    return;
-  }
-
-  const recognition = new SpeechRecognition();
-  recognition.lang =
-    currentLanguage === "Marathi" ? "mr-IN" :
-    currentLanguage === "English" ? "en-US" : "hi-IN";
-
-  recognition.start();
-
-  recognition.onresult = function(event) {
-    document.getElementById("userInput").value =
-      event.results[0][0].transcript;
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const rec = new SR();
+  rec.lang = currentLanguage==="Marathi"?"mr-IN":currentLanguage==="English"?"en-US":"hi-IN";
+  rec.start();
+  rec.onresult = e => {
+    document.getElementById("userInput").value = e.results[0][0].transcript;
     sendMessage();
   };
 }
 
-// 🔊 Voice Output
 function speak(text) {
-  const msg = new SpeechSynthesisUtterance(text);
-  msg.lang =
-    currentLanguage === "Marathi" ? "mr-IN" :
-    currentLanguage === "English" ? "en-US" : "hi-IN";
-  window.speechSynthesis.speak(msg);
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = currentLanguage==="Marathi"?"mr-IN":currentLanguage==="English"?"en-US":"hi-IN";
+  speechSynthesis.speak(u);
 }
 </script>
 
