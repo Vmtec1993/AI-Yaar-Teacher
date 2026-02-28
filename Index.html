@@ -47,4 +47,161 @@ body {
 }
 
 .messages {
-  flex:
+  flex: 1;
+  padding: 12px;
+  overflow-y: auto;
+  background: #f9fafb;
+}
+
+.msg {
+  margin: 8px 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  max-width: 80%;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.user {
+  background: #e0e7ff;
+  align-self: flex-end;
+}
+
+.bot {
+  background: #f3f4f6;
+  align-self: flex-start;
+}
+
+.input-area {
+  display: flex;
+  padding: 10px;
+  border-top: 1px solid #ddd;
+  gap: 6px;
+}
+
+.input-area input {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+.input-area button {
+  border: none;
+  background: #4f46e5;
+  color: white;
+  padding: 10px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="chat-container">
+  <div class="header">
+    <h2>🤖 AI YAAR</h2>
+    <select id="languageSelect" onchange="changeLanguage()">
+      <option value="Hindi">Hindi</option>
+      <option value="Marathi">Marathi</option>
+      <option value="English">English</option>
+    </select>
+  </div>
+
+  <div class="messages" id="messages">
+    <div class="msg bot">
+      👋 Hi! Main <b>AI Yaar</b> hoon 😄<br>
+      AI seekhne ke liye kuch bhi poochho.
+    </div>
+  </div>
+
+  <div class="input-area">
+    <input type="text" id="userInput" placeholder="Type ya bol ke poochho..." />
+    <button onclick="startVoice()">🎤</button>
+    <button onclick="sendMessage()">➤</button>
+  </div>
+</div>
+
+<script>
+const messages = document.getElementById("messages");
+let currentLanguage = "Hindi";
+
+// Add message to chat
+function addMessage(text, sender) {
+  const div = document.createElement("div");
+  div.className = "msg " + sender;
+  div.innerText = text;
+  messages.appendChild(div);
+  messages.scrollTop = messages.scrollHeight;
+}
+
+// Change language
+function changeLanguage() {
+  currentLanguage = document.getElementById("languageSelect").value;
+  addMessage("🌐 Language changed to " + currentLanguage, "bot");
+}
+
+// Send message to backend
+async function sendMessage() {
+  const input = document.getElementById("userInput");
+  if (!input.value) return;
+
+  const userText = input.value;
+  addMessage(userText, "user");
+  input.value = "";
+
+  try {
+    const res = await fetch("http://127.0.0.1:5000/chat", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({
+        message: userText,
+        language: currentLanguage
+      })
+    });
+
+    const data = await res.json();
+    addMessage(data.reply, "bot");
+    speak(data.reply);
+
+  } catch (err) {
+    addMessage("😅 Server connect nahi ho pa raha.", "bot");
+  }
+}
+
+// 🎤 Voice Input
+function startVoice() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    alert("Voice input supported nahi hai");
+    return;
+  }
+
+  const recognition = new SpeechRecognition();
+  recognition.lang =
+    currentLanguage === "Marathi" ? "mr-IN" :
+    currentLanguage === "English" ? "en-US" : "hi-IN";
+
+  recognition.start();
+
+  recognition.onresult = function(event) {
+    document.getElementById("userInput").value =
+      event.results[0][0].transcript;
+    sendMessage();
+  };
+}
+
+// 🔊 Voice Output
+function speak(text) {
+  const msg = new SpeechSynthesisUtterance(text);
+  msg.lang =
+    currentLanguage === "Marathi" ? "mr-IN" :
+    currentLanguage === "English" ? "en-US" : "hi-IN";
+  window.speechSynthesis.speak(msg);
+}
+</script>
+
+</body>
+</html>
